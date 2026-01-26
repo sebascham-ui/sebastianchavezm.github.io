@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEBASTIÁN CH | Experimental</title>
+    <title>SEBASTIÁN CH | 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* Transición suave para el cambio de fondo y color de texto */
         body { 
             background-color: #000; 
             color: #fff; 
@@ -16,24 +15,35 @@
             overflow: hidden; 
             height: 100vh; 
             cursor: pointer;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* Clase para el modo mostaza (Fondo claro) */
-        body.mustard-mode {
+        body.light-mode {
             background-color: #fff;
             color: #000;
         }
 
+        /* Capa de Geometrías con fusión líquida */
         .canvas-container {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            filter: url(#retro-goo);
+            filter: blur(12px) contrast(25);
         }
 
         canvas { width: 100%; height: 100%; }
+
+        /* Capa de Ruido Retro Sutil (6% de opacidad) */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            opacity: 0.06;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
 
         .center-content {
             position: fixed;
@@ -64,7 +74,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none;
-            z-index: 5;
+            z-index: 15;
         }
 
         .letter {
@@ -73,25 +83,24 @@
             font-weight: 900;
             text-transform: uppercase;
             animation: moveLetter 22s linear infinite;
-            transform-origin: center center;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 5vw;
-            height: 5vw;
+            width: 6vw; 
+            height: 6vw;
+            transform-origin: center center;
         }
 
-        /* Kerning específico para el acento */
-        .char-Á { margin-left: -1vw; }
+        .char-Á { margin-left: -1.2vw; }
 
         @keyframes moveLetter {
             0%   { top: 5%;   left: 5%;   transform: rotate(0deg); }
             24.9% { transform: rotate(0deg); }
-            25%  { top: 5%;   left: 90%;  transform: rotate(90deg); }
+            25%  { top: 5%;   left: 88%;  transform: rotate(90deg); }
             49.9% { transform: rotate(90deg); }
-            50%  { top: 90%;  left: 90%;  transform: rotate(180deg); }
+            50%  { top: 88%;  left: 88%;  transform: rotate(180deg); }
             74.9% { transform: rotate(180deg); }
-            75%  { top: 90%;  left: 5%;   transform: rotate(270deg); }
+            75%  { top: 88%;  left: 5%;   transform: rotate(270deg); }
             99.9% { transform: rotate(270deg); }
             100% { top: 5%;   left: 5%;   transform: rotate(360deg); }
         }
@@ -99,16 +108,7 @@
 </head>
 <body>
 
-    <svg style="display:none;">
-        <defs>
-            <filter id="retro-goo">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
-                <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
-                <feComposite in="goo" in2="noise" operator="atop" />
-            </filter>
-        </defs>
-    </svg>
+    <div class="noise-overlay"></div>
 
     <div class="canvas-container">
         <canvas id="metaballs"></canvas>
@@ -125,22 +125,20 @@
         const container = document.getElementById('orbit-container');
         const nameText = "SEBASTIÁN CH";
         const totalTitles = 2;
-        let isMustard = false;
+        let isLightMode = false;
 
-        // Paletas de colores actualizadas
         const colors = {
-            blue: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff' },
-            mustard: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00' }
+            dark: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff' },
+            light: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00' }
         };
 
-        // Inicializar letras
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
                 const span = document.createElement('span');
                 span.className = `letter char-${char}`;
                 span.innerText = char === " " ? "\u00A0" : char;
-                const delayPerLetter = 0.35; 
+                const delayPerLetter = 0.38; // Espaciado lateral optimizado
                 const delayPerTitle = 11; 
                 span.style.animationDelay = `${(i * -delayPerLetter) - (t * delayPerTitle)}s`;
                 container.appendChild(span);
@@ -163,11 +161,9 @@
             mouse.y = e.clientY;
         });
 
-        // CAMBIO DE MODO COMPLETO AL CLIC
         window.addEventListener('click', () => { 
-            isMustard = !isMustard;
-            // Alternar clase en el body para cambiar fondo y texto
-            document.body.classList.toggle('mustard-mode');
+            isLightMode = !isLightMode;
+            document.body.classList.toggle('light-mode');
         });
 
         class Dot {
@@ -175,9 +171,9 @@
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.r = Math.random() * 90 + 45;
-                this.vx = (Math.random() - 0.5) * 1.4;
-                this.vy = (Math.random() - 0.5) * 1.4;
+                this.r = Math.random() * 80 + 40;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
@@ -186,13 +182,13 @@
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 320) { this.x += dx * 0.025; this.y += dy * 0.025; }
+                if (dist < 300) { this.x += dx * 0.02; this.y += dy * 0.02; }
             }
             draw() {
-                const current = isMustard ? colors.mustard : colors.blue;
+                const current = isLightMode ? colors.light : colors.dark;
                 const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
                 g.addColorStop(0, current.primary);
-                g.addColorStop(0.5, current.secondary);
+                g.addColorStop(0.6, current.secondary);
                 g.addColorStop(1, 'transparent');
                 ctx.fillStyle = g;
                 ctx.beginPath();
@@ -203,20 +199,24 @@
 
         function setup() {
             resize();
-            for (let i = 0; i < 22; i++) dots.push(new Dot());
+            for (let i = 0; i < 20; i++) dots.push(new Dot());
             loop();
         }
 
         function loop() {
             ctx.clearRect(0, 0, width, height);
-            const current = isMustard ? colors.mustard : colors.blue;
-            
-            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
+            const current = isLightMode ? colors.light : colors.dark;
+            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 110);
             mg.addColorStop(0, current.cursor);
             mg.addColorStop(1, 'transparent');
             ctx.fillStyle = mg;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
+            ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
             ctx.fill();
-            
-            dots.forEach(d => { d.update(); d
+            dots.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(loop);
+        }
+        setup();
+    </script>
+</body>
+</html>
