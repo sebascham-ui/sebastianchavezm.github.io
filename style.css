@@ -1,3 +1,4 @@
+/* Reset general */
 * {
     margin: 0;
     padding: 0;
@@ -7,53 +8,60 @@
 body {
     background-color: #000;
     color: #fff;
-    font-family: 'Montserrat', sans-serif;
-    overflow-x: hidden;
-    height: 100vh;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden; /* Evita que la página se mueva al seguir el mouse */
 }
 
-/* EFECTO DE GRANO / RUIDO */
-body::before {
-    content: "";
+/* El fondo interactivo */
+#fluid-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    /* Esta es una imagen de ruido muy pequeña que se repite */
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_ext_noise_transparent.png');
-    opacity: 0.05; /* Muy sutil */
-    pointer-events: none;
-    z-index: 999;
+    z-index: 1;
+    filter: blur(60px); /* Difumina la luz para que parezca lámpara de lava */
 }
 
-.hero-center {
+.hero {
     height: 100vh;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    padding: 20px;
-    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    position: relative;
+    z-index: 2; /* Pone el texto por delante de la luz */
+}
+
+.text-container {
+    width: 80%; /* Ajusta qué tan ancho quieres el texto en pantalla */
+    max-width: 1000px;
+    text-align: justify; /* Clave para que el subtítulo se estire */
 }
 
 .main-title {
-    font-size: clamp(3rem, 15vw, 10rem);
-    font-weight: 900;
-    letter-spacing: -4px; /* Estética experimental apretada */
-    line-height: 0.85;
+    font-size: 8vw;
+    font-weight: 100; /* Letra muy delgada */
+    letter-spacing: -2px;
+    line-height: 1;
     text-transform: uppercase;
-    margin-bottom: 25px;
+    display: block;
+    text-align: center; /* El nombre se centra */
 }
 
 .sub-title {
-    font-size: clamp(0.7rem, 1.8vw, 1.2rem);
+    font-size: 1.1vw; /* Ajuste para que el largo coincida con el nombre */
     font-weight: 400;
-    letter-spacing: 2px;
     text-transform: uppercase;
+    letter-spacing: 0.42vw; /* Ajusta este valor si quieres más o menos separación */
+    display: block;
+    width: 100%;
+    text-align: justify;
+    text-align-last: justify; /* Fuerza a la última línea a ocupar todo el ancho */
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.3); /* Línea divisoria delgada */
+    padding-top: 15px;
 }
 
-.bold-accent {
+.bold {
     font-weight: 900;
 }
