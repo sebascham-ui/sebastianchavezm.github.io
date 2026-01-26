@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Transición suave para el cambio de fondo y color de texto */
         body { 
             background-color: #000; 
             color: #fff; 
@@ -14,6 +16,13 @@
             overflow: hidden; 
             height: 100vh; 
             cursor: pointer;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Clase para el modo mostaza (Fondo claro) */
+        body.mustard-mode {
+            background-color: #fff;
+            color: #000;
         }
 
         .canvas-container {
@@ -37,17 +46,17 @@
         }
 
         .sub-title {
-            font-size: clamp(0.7rem, 1vw, 1rem);
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
             font-weight: 100;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 5px;
         }
 
         .bold { 
             font-weight: 900; 
             display: block; 
             margin-top: 10px; 
-            font-size: clamp(1.1rem, 2.2vw, 1.8rem); 
+            font-size: clamp(1.2rem, 2.5vw, 2.2rem); 
         }
 
         .orbit-wrapper {
@@ -60,35 +69,31 @@
 
         .letter {
             position: absolute;
-            font-size: 4vw;
+            font-size: 4.5vw;
             font-weight: 900;
             text-transform: uppercase;
-            animation: moveLetter 20s linear infinite;
-            will-change: top, left, transform;
-            display: inline-block;
+            animation: moveLetter 22s linear infinite;
+            transform-origin: center center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 5vw;
+            height: 5vw;
         }
 
-        /* Corrección específica para la brecha de la Á */
-        .char-Á { margin-left: -0.8vw; }
+        /* Kerning específico para el acento */
+        .char-Á { margin-left: -1vw; }
 
-        /* Animación con compensación de espaciado en laterales */
         @keyframes moveLetter {
-            0%   { top: 7%;   left: 7%;   transform: rotate(0deg); }
-            /* Tramo Superior */
+            0%   { top: 5%;   left: 5%;   transform: rotate(0deg); }
             24.9% { transform: rotate(0deg); }
-            /* Esquina Superior Derecha */
-            25%  { top: 7%;   left: 90%;  transform: rotate(90deg); }
-            /* Tramo Lateral Derecho (Aumento de espacio visual) */
+            25%  { top: 5%;   left: 90%;  transform: rotate(90deg); }
             49.9% { transform: rotate(90deg); }
-            /* Esquina Inferior Derecha */
             50%  { top: 90%;  left: 90%;  transform: rotate(180deg); }
-            /* Tramo Inferior */
             74.9% { transform: rotate(180deg); }
-            /* Esquina Inferior Izquierda */
-            75%  { top: 90%;  left: 7%;   transform: rotate(270deg); }
-            /* Tramo Lateral Izquierdo */
+            75%  { top: 90%;  left: 5%;   transform: rotate(270deg); }
             99.9% { transform: rotate(270deg); }
-            100% { top: 7%;   left: 7%;   transform: rotate(360deg); }
+            100% { top: 5%;   left: 5%;   transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -99,7 +104,7 @@
             <filter id="retro-goo">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
                 <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
-                <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise" />
+                <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
                 <feComposite in="goo" in2="noise" operator="atop" />
             </filter>
         </defs>
@@ -122,24 +127,22 @@
         const totalTitles = 2;
         let isMustard = false;
 
+        // Paletas de colores actualizadas
         const colors = {
-            blue: { primary: '#00f2ff', secondary: '#0062ff' },
-            mustard: { primary: '#ffcc00', secondary: '#b38600' }
+            blue: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff' },
+            mustard: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00' }
         };
 
+        // Inicializar letras
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
                 const span = document.createElement('span');
-                // Asignamos una clase única por letra para el CSS (ej: char-Á)
                 span.className = `letter char-${char}`;
                 span.innerText = char === " " ? "\u00A0" : char;
-                
-                // Delay mayor (0.28s) para dar más aire en los laterales
-                const delayPerLetter = 0.28; 
-                const delayPerTitle = 10; 
+                const delayPerLetter = 0.35; 
+                const delayPerTitle = 11; 
                 span.style.animationDelay = `${(i * -delayPerLetter) - (t * delayPerTitle)}s`;
-                
                 container.appendChild(span);
             });
         }
@@ -160,16 +163,21 @@
             mouse.y = e.clientY;
         });
 
-        window.addEventListener('click', () => { isMustard = !isMustard; });
+        // CAMBIO DE MODO COMPLETO AL CLIC
+        window.addEventListener('click', () => { 
+            isMustard = !isMustard;
+            // Alternar clase en el body para cambiar fondo y texto
+            document.body.classList.toggle('mustard-mode');
+        });
 
         class Dot {
             constructor() { this.init(); }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.r = Math.random() * 80 + 40;
-                this.vx = (Math.random() - 0.5) * 1.3;
-                this.vy = (Math.random() - 0.5) * 1.3;
+                this.r = Math.random() * 90 + 45;
+                this.vx = (Math.random() - 0.5) * 1.4;
+                this.vy = (Math.random() - 0.5) * 1.4;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
@@ -178,13 +186,13 @@
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 300) { this.x += dx * 0.02; this.y += dy * 0.02; }
+                if (dist < 320) { this.x += dx * 0.025; this.y += dy * 0.025; }
             }
             draw() {
                 const current = isMustard ? colors.mustard : colors.blue;
                 const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
                 g.addColorStop(0, current.primary);
-                g.addColorStop(0.6, current.secondary);
+                g.addColorStop(0.5, current.secondary);
                 g.addColorStop(1, 'transparent');
                 ctx.fillStyle = g;
                 ctx.beginPath();
@@ -202,17 +210,13 @@
         function loop() {
             ctx.clearRect(0, 0, width, height);
             const current = isMustard ? colors.mustard : colors.blue;
-            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 110);
-            mg.addColorStop(0, current.primary);
+            
+            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
+            mg.addColorStop(0, current.cursor);
             mg.addColorStop(1, 'transparent');
             ctx.fillStyle = mg;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
+            ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
             ctx.fill();
-            dots.forEach(d => { d.update(); d.draw(); });
-            requestAnimationFrame(loop);
-        }
-        setup();
-    </script>
-</body>
-</html>
+            
+            dots.forEach(d => { d.update(); d
