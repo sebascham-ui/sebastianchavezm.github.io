@@ -1,67 +1,62 @@
-/* Reset general */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     background-color: #000;
     color: #fff;
     font-family: 'Inter', sans-serif;
-    overflow: hidden; /* Evita que la página se mueva al seguir el mouse */
+    overflow: hidden;
+    height: 100vh;
 }
 
-/* El fondo interactivo */
-#fluid-canvas {
+#geometry-canvas {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
     z-index: 1;
-    filter: blur(60px); /* Difumina la luz para que parezca lámpara de lava */
 }
 
-.hero {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    z-index: 2; /* Pone el texto por delante de la luz */
-}
-
-.text-container {
-    width: 80%; /* Ajusta qué tan ancho quieres el texto en pantalla */
-    max-width: 1000px;
-    text-align: justify; /* Clave para que el subtítulo se estire */
-}
-
-.main-title {
-    font-size: 8vw;
-    font-weight: 100; /* Letra muy delgada */
-    letter-spacing: -2px;
-    line-height: 1;
-    text-transform: uppercase;
-    display: block;
-    text-align: center; /* El nombre se centra */
+/* Contenido Central */
+.center-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+    width: 300px;
+    pointer-events: none; /* Para que el mouse pase a través del texto hacia las figuras */
 }
 
 .sub-title {
-    font-size: 1.1vw; /* Ajuste para que el largo coincida con el nombre */
-    font-weight: 400;
+    font-size: 1rem;
+    font-weight: 100;
     text-transform: uppercase;
-    letter-spacing: 0.42vw; /* Ajusta este valor si quieres más o menos separación */
-    display: block;
-    width: 100%;
-    text-align: justify;
-    text-align-last: justify; /* Fuerza a la última línea a ocupar todo el ancho */
-    margin-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.3); /* Línea divisoria delgada */
-    padding-top: 15px;
+    letter-spacing: 2px;
+    line-height: 1.5;
 }
 
-.bold {
+.bold { font-weight: 900; }
+
+/* Textos en el contorno (Orbitando) */
+.orbit-text {
+    position: fixed;
+    font-size: 4vw;
     font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 5;
+    animation: moveAround 20s linear infinite;
+}
+
+/* Diferentes puntos de inicio para cada texto */
+.t2 { animation-delay: -5s; }
+.t3 { animation-delay: -10s; }
+.t4 { animation-delay: -15s; }
+
+@keyframes moveAround {
+    0%   { top: 5%;  left: 5%; }
+    25%  { top: 5%;  left: 60%; }
+    50%  { top: 85%; left: 60%; }
+    75%  { top: 85%; left: 5%; }
+    100% { top: 5%;  left: 5%; }
 }
