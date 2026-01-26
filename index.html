@@ -13,7 +13,7 @@
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             height: 100vh; 
-            cursor: pointer; /* Indica que la pantalla es interactiva */
+            cursor: pointer;
         }
 
         .canvas-container {
@@ -65,22 +65,25 @@
 
         .letter {
             position: absolute;
-            font-size: 4.5vw;
+            font-size: 4vw;
             font-weight: 900;
             text-transform: uppercase;
-            animation: moveLetter 18s linear infinite;
+            /* Se lee SEBASTIÁN CH de forma fluida */
+            animation: moveLetter 20s linear infinite;
+            will-change: top, left, transform;
         }
 
+        /* Trayectoria corregida: giros secos en esquinas y lectura natural */
         @keyframes moveLetter {
-            0%   { top: 6%;   left: 6%;   transform: rotate(0deg); }
+            0%   { top: 7%;   left: 7%;   transform: rotate(0deg); }
             24.9% { transform: rotate(0deg); }
-            25%  { top: 6%;   left: 88%;  transform: rotate(90deg); }
+            25%  { top: 7%;   left: 88%;  transform: rotate(90deg); }
             49.9% { transform: rotate(90deg); }
             50%  { top: 88%;  left: 88%;  transform: rotate(180deg); }
             74.9% { transform: rotate(180deg); }
-            75%  { top: 88%;  left: 6%;   transform: rotate(270deg); }
+            75%  { top: 88%;  left: 7%;   transform: rotate(270deg); }
             99.9% { transform: rotate(270deg); }
-            100% { top: 6%;   left: 6%;   transform: rotate(360deg); }
+            100% { top: 7%;   left: 7%;   transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -114,27 +117,29 @@
         const totalTitles = 2;
         let isMustard = false;
 
-        // Paletas de colores
         const colors = {
             blue: { primary: '#00f2ff', secondary: '#0062ff' },
             mustard: { primary: '#ffcc00', secondary: '#b38600' }
         };
 
-        // Generar letras para órbita
+        // CORRECCIÓN DE LETRAS: Se invirtió el signo del delay para corregir el orden de lectura
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
                 const span = document.createElement('span');
                 span.className = 'letter';
                 span.innerText = char === " " ? "\u00A0" : char;
-                const delayPerLetter = 0.12; 
-                const delayPerTitle = 9; 
-                span.style.animationDelay = `${(i * delayPerLetter) - (t * delayPerTitle)}s`;
+                
+                // Espaciado corregido (0.2s) para evitar solapamiento
+                const delayPerLetter = 0.2; 
+                const delayPerTitle = 10; 
+                // El signo negativo hace que la 'S' lidere el camino
+                span.style.animationDelay = `${(i * -delayPerLetter) - (t * delayPerTitle)}s`;
+                
                 container.appendChild(span);
             });
         }
 
-        // Lógica de Canvas
         const canvas = document.getElementById('metaballs');
         const ctx = canvas.getContext('2d');
         let width, height, dots = [];
@@ -151,15 +156,12 @@
             mouse.y = e.clientY;
         });
 
-        // CAMBIO DE COLOR AL CLIC
         window.addEventListener('click', () => {
             isMustard = !isMustard;
         });
 
         class Dot {
-            constructor() {
-                this.init();
-            }
+            constructor() { this.init(); }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
@@ -202,7 +204,6 @@
 
         function loop() {
             ctx.clearRect(0, 0, width, height);
-            
             const current = isMustard ? colors.mustard : colors.blue;
             const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 110);
             mg.addColorStop(0, current.primary);
@@ -211,11 +212,7 @@
             ctx.beginPath();
             ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
             ctx.fill();
-
-            dots.forEach(d => {
-                d.update();
-                d.draw();
-            });
+            dots.forEach(d => { d.update(); d.draw(); });
             requestAnimationFrame(loop);
         }
 
