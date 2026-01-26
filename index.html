@@ -27,31 +27,36 @@
             font-weight: 100;
             text-transform: uppercase;
             letter-spacing: 4px;
-            line-height: 1.8;
         }
 
-        .bold { font-weight: 900; }
+        .bold { font-weight: 900; display: block; margin-top: 10px; font-size: 1.2rem; }
 
-        .orbit-text {
+        /* Contenedor de letras para la órbita */
+        .orbit-wrapper {
             position: fixed;
-            font-size: 6vw;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .letter {
+            position: absolute;
+            font-size: 5vw;
             font-weight: 900;
             text-transform: uppercase;
-            white-space: nowrap;
-            z-index: 5;
-            animation: moveAround 18s linear infinite;
+            /* Animación individual para cada letra */
+            animation: moveLetter 20s linear infinite;
         }
 
-        .t2 { animation-delay: -4.5s; }
-        .t3 { animation-delay: -9s; }
-        .t4 { animation-delay: -13.5s; }
-
-        @keyframes moveAround {
-            0%   { top: 2%;   left: 2%;   transform: translate(0, 0); }
-            25%  { top: 2%;   left: 98%;  transform: translate(-100%, 0); }
-            50%  { top: 98%;  left: 98%;  transform: translate(-100%, -100%); }
-            75%  { top: 98%;  left: 2%;   transform: translate(0, -100%); }
-            100% { top: 2%;   left: 2%;   transform: translate(0, 0); }
+        @keyframes moveLetter {
+            0%   { top: 2%;   left: 2%;   transform: rotate(0deg); }
+            25%  { top: 2%;   left: 95%;  transform: rotate(90deg); }
+            50%  { top: 95%;  left: 95%;  transform: rotate(180deg); }
+            75%  { top: 95%;  left: 2%;   transform: rotate(270deg); }
+            100% { top: 2%;   left: 2%;   transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -60,15 +65,35 @@
     <canvas id="geometry-canvas"></canvas>
 
     <div class="center-content">
-        <p class="sub-title">Estudiante de arquitectura 10° semestre <br> <span class="bold">| Diseño | Modelado | 2026</span></p>
+        <p class="sub-title">Estudiante de arquitectura 10° semestre</p>
+        <p class="bold">DISEÑO & MODELADO 3D | 2026</p>
     </div>
 
-    <h1 class="orbit-text t1">SEBASTIÁN CH</h1>
-    <h1 class="orbit-text t2">SEBASTIÁN CH</h1>
-    <h1 class="orbit-text t3">SEBASTIÁN CH</h1>
-    <h1 class="orbit-text t4">SEBASTIÁN CH</h1>
+    <div id="orbit-container" class="orbit-wrapper"></div>
 
     <script>
+        // GENERACIÓN DE LETRAS DINÁMICAS
+        const container = document.getElementById('orbit-container');
+        const name = "SEBASTIÁN CH";
+        const totalTitles = 2; // Solo dos títulos
+
+        for (let t = 0; t < totalTitles; t++) {
+            const letters = name.split("");
+            letters.forEach((char, i) => {
+                const span = document.createElement('span');
+                span.className = 'letter';
+                span.innerText = char === " " ? "\u00A0" : char;
+                
+                // Desfase para que las letras se sigan una a otra
+                const delayPerLetter = 0.15;
+                const delayPerTitle = 10; // 20s / 2 títulos = 10s de separación
+                span.style.animationDelay = `${(i * delayPerLetter) - (t * delayPerTitle)}s`;
+                
+                container.appendChild(span);
+            });
+        }
+
+        // GEOMETRÍAS DE FONDO
         const canvas = document.getElementById('geometry-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
@@ -87,9 +112,7 @@
         });
 
         class Shape {
-            constructor() {
-                this.init();
-            }
+            constructor() { this.init(); }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
@@ -101,7 +124,6 @@
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                
                 let drawX = this.x;
                 let drawY = this.y;
 
@@ -114,7 +136,6 @@
 
                 ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
                 ctx.lineWidth = 1;
-                
                 for(let i=0; i<6; i++) {
                     ctx.beginPath();
                     ctx.arc(drawX, drawY, this.size + (i*10), 0, Math.PI * 2);
