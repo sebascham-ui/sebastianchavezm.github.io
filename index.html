@@ -23,14 +23,14 @@
             color: #000;
         }
 
-        /* Capa de Geometrías con Filtro SVG de Fusión y Ruido */
+        /* Capa de Geometrías y Líneas */
         .canvas-container {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            /* Aplicamos el filtro SVG que define la fusión líquida y el grano */
-            filter: url(#metaball-retro);
+            /* Filtro de fusión líquida pura (sin ruido) */
+            filter: blur(12px) contrast(30);
         }
 
         canvas { width: 100%; height: 100%; }
@@ -96,17 +96,6 @@
 </head>
 <body>
 
-    <svg style="position: absolute; width: 0; height: 0;">
-        <defs>
-            <filter id="metaball-retro">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -12" result="goo" />
-                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="noise" />
-                <feComposite in="goo" in2="noise" operator="atop" />
-            </filter>
-        </defs>
-    </svg>
-
     <div class="canvas-container">
         <canvas id="metaballs"></canvas>
     </div>
@@ -120,15 +109,16 @@
 
     <script>
         const container = document.getElementById('orbit-container');
-        const nameText = "SEBASTIAN CH"; // Nombre sin acento corregido
+        const nameText = "SEBASTIAN CH";
         const totalTitles = 2;
         let isLightMode = false;
 
         const colors = {
-            dark: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff' },
-            light: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00' }
+            dark: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff', line: 'rgba(0, 242, 255, 0.4)' },
+            light: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00', line: 'rgba(255, 204, 0, 0.4)' }
         };
 
+        // Generación de letras
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
@@ -144,7 +134,7 @@
 
         const canvas = document.getElementById('metaballs');
         const ctx = canvas.getContext('2d');
-        let width, height, dots = [];
+        let width, height, dots = [], lines = [];
         const mouse = { x: -2000, y: -2000 };
 
         function resize() {
@@ -163,14 +153,15 @@
             document.body.classList.toggle('light-mode');
         });
 
+        // Clase para las Metaballs
         class Dot {
             constructor() { this.init(); }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.r = Math.random() * 90 + 50;
-                this.vx = (Math.random() - 0.5) * 1.6;
-                this.vy = (Math.random() - 0.5) * 1.6;
+                this.r = Math.random() * 80 + 40;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
@@ -179,24 +170,49 @@
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 350) { this.x += dx * 0.025; this.y += dy * 0.025; }
+                if (dist < 300) { this.x += dx * 0.02; this.y += dy * 0.02; }
             }
             draw() {
                 const current = isLightMode ? colors.light : colors.dark;
-                const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
-                g.addColorStop(0, current.primary);
-                g.addColorStop(0.4, current.secondary); // Gradiente más cerrado para mejor fusión
-                g.addColorStop(1, 'transparent');
-                ctx.fillStyle = g;
+                ctx.fillStyle = current.primary;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
+        // Clase para las Líneas Horizontales Espontáneas
+        class Line {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.length = Math.random() * 200 + 100;
+                this.speed = Math.random() * 15 + 5;
+                this.thickness = Math.random() * 2 + 1;
+            }
+            update() {
+                this.x += this.speed;
+                if (this.x > width) {
+                    this.x = -this.length;
+                    this.y = Math.random() * height;
+                }
+            }
+            draw() {
+                const current = isLightMode ? colors.light : colors.dark;
+                ctx.strokeStyle = current.line;
+                ctx.lineWidth = this.thickness;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + this.length, this.y);
+                ctx.stroke();
+            }
+        }
+
         function setup() {
             resize();
-            for (let i = 0; i < 22; i++) dots.push(new Dot());
+            for (let i = 0; i < 20; i++) dots.push(new Dot());
+            for (let i = 0; i < 10; i++) lines.push(new Line());
             loop();
         }
 
@@ -204,15 +220,18 @@
             ctx.clearRect(0, 0, width, height);
             const current = isLightMode ? colors.light : colors.dark;
             
-            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 130);
-            mg.addColorStop(0, current.cursor);
-            mg.addColorStop(1, 'transparent');
-            ctx.fillStyle = mg;
+            // Dibujar líneas primero
+            lines.forEach(l => { l.update(); l.draw(); });
+
+            // Dibujar gota del mouse
+            ctx.fillStyle = current.cursor;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 130, 0, Math.PI * 2);
+            ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
             ctx.fill();
-            
+
+            // Dibujar Metaballs
             dots.forEach(d => { d.update(); d.draw(); });
+            
             requestAnimationFrame(loop);
         }
         setup();
