@@ -15,7 +15,7 @@
             overflow: hidden; 
             height: 100vh; 
             cursor: pointer;
-            transition: background-color 0.5s ease, color 0.5s ease;
+            transition: background-color 0.5s ease;
         }
 
         body.light-mode { background-color: #fff; color: #000; }
@@ -25,7 +25,8 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            filter: blur(14px) contrast(28); /* Optimizado para fusión de degradados */
+            /* Filtro de fusión líquida ultra-preciso */
+            filter: blur(15px) contrast(35); 
         }
 
         canvas { width: 100%; height: 100%; }
@@ -36,7 +37,6 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
-            width: 90%;
             pointer-events: none;
         }
 
@@ -71,8 +71,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 6vw; 
-            height: 6vw;
+            width: 6vw; height: 6vw;
             transform-origin: center center;
         }
 
@@ -110,19 +109,18 @@
 
         const palettes = {
             blue: ["#001c44", "#0062ff", "#00f2ff"],
-            mustard: ["#5e4400", "#b38600", "#eaff00"]
+            mustard: ["#4a3500", "#b38600", "#eaff00"]
         };
 
-        // Órbita
+        // Órbita de letras
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
                 const span = document.createElement('span');
-                span.className = `letter char-${char}`;
+                span.className = `letter`;
                 span.innerText = char === " " ? "\u00A0" : char;
                 const delayPerLetter = 0.38; 
-                const delayPerTitle = 11; 
-                span.style.animationDelay = `${(i * -delayPerLetter) - (t * delayPerTitle)}s`;
+                span.style.animationDelay = `${(i * -delayPerLetter) - (t * 11)}s`;
                 container.appendChild(span);
             });
         }
@@ -139,8 +137,7 @@
 
         window.addEventListener('resize', resize);
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+            mouse.x = e.clientX; mouse.y = e.clientY;
         });
 
         window.addEventListener('click', () => { 
@@ -150,40 +147,34 @@
 
         class Dot {
             constructor(type) {
-                this.type = type; // 'S', 'M', 'L'
+                this.type = type;
                 this.init();
             }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                
-                // Tamaños variados
-                if (this.type === 'S') this.r = Math.random() * 20 + 15;
-                else if (this.type === 'M') this.r = Math.random() * 50 + 40;
-                else this.r = Math.random() * 80 + 90;
-
-                this.vx = (Math.random() - 0.5) * 1.8;
-                this.vy = (Math.random() - 0.5) * 1.8;
+                if (this.type === 'S') this.r = Math.random() * 20 + 20;
+                else if (this.type === 'M') this.r = Math.random() * 40 + 50;
+                else this.r = Math.random() * 60 + 90;
+                this.vx = (Math.random() - 0.5) * 1.6;
+                this.vy = (Math.random() - 0.5) * 1.6;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
-
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
+                const dx = mouse.x - this.x, dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 350) {
-                    this.x += dx * 0.02;
-                    this.y += dy * 0.02;
-                }
+                if (dist < 300) { this.x += dx * 0.02; this.y += dy * 0.02; }
             }
             draw() {
                 const colors = isLightMode ? palettes.mustard : palettes.blue;
+                // Usamos un gradiente con paradas muy juntas al final para "engañar" al filtro de contraste
                 const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
-                g.addColorStop(0, colors[2]); // Brillo
-                g.addColorStop(0.4, colors[1]); // Medio
-                g.addColorStop(1, colors[0]); // Base / Sombra
+                g.addColorStop(0, colors[2]);
+                g.addColorStop(0.5, colors[1]);
+                g.addColorStop(0.9, colors[0]);
+                g.addColorStop(1, colors[0]); // El borde exterior DEBE ser igual para que el filtro los una
                 
                 ctx.fillStyle = g;
                 ctx.beginPath();
@@ -197,16 +188,15 @@
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.length = Math.random() * 300 + 150;
-                this.speed = Math.random() * 12 + 4;
+                this.length = Math.random() * 300 + 100;
+                this.speed = Math.random() * 10 + 3;
             }
             update() {
                 this.x += this.speed;
                 if (this.x > width) { this.x = -this.length; this.y = Math.random() * height; }
             }
             draw() {
-                const colors = isLightMode ? palettes.mustard : palettes.blue;
-                ctx.strokeStyle = isLightMode ? 'rgba(179, 134, 0, 0.2)' : 'rgba(0, 242, 255, 0.2)';
+                ctx.strokeStyle = isLightMode ? 'rgba(74, 53, 0, 0.3)' : 'rgba(0, 242, 255, 0.3)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
@@ -217,11 +207,10 @@
 
         function setup() {
             resize();
-            // 35 geometrías totales para mayor densidad
-            for (let i = 0; i < 15; i++) dots.push(new Dot('S'));
-            for (let i = 0; i < 12; i++) dots.push(new Dot('M'));
+            for (let i = 0; i < 12; i++) dots.push(new Dot('S'));
+            for (let i = 0; i < 10; i++) dots.push(new Dot('M'));
             for (let i = 0; i < 8; i++) dots.push(new Dot('L'));
-            for (let i = 0; i < 15; i++) lines.push(new Line());
+            for (let i = 0; i < 12; i++) lines.push(new Line());
             loop();
         }
 
@@ -229,14 +218,14 @@
             ctx.clearRect(0, 0, width, height);
             lines.forEach(l => { l.update(); l.draw(); });
 
-            // Gota Mouse
             const colors = isLightMode ? palettes.mustard : palettes.blue;
-            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 130);
+            // Gota mouse
+            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
             mg.addColorStop(0, colors[2]);
-            mg.addColorStop(1, 'transparent');
+            mg.addColorStop(1, colors[0]);
             ctx.fillStyle = mg;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 130, 0, Math.PI * 2);
+            ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
             ctx.fill();
 
             dots.forEach(d => { d.update(); d.draw(); });
