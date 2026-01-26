@@ -18,19 +18,14 @@
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        body.light-mode {
-            background-color: #fff;
-            color: #000;
-        }
+        body.light-mode { background-color: #fff; color: #000; }
 
-        /* Capa de Geometrías y Líneas */
         .canvas-container {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            /* Filtro de fusión líquida pura (sin ruido) */
-            filter: blur(12px) contrast(30);
+            filter: blur(14px) contrast(28); /* Optimizado para fusión de degradados */
         }
 
         canvas { width: 100%; height: 100%; }
@@ -113,12 +108,12 @@
         const totalTitles = 2;
         let isLightMode = false;
 
-        const colors = {
-            dark: { primary: '#00f2ff', secondary: '#0062ff', cursor: '#00f2ff', line: 'rgba(0, 242, 255, 0.4)' },
-            light: { primary: '#ffcc00', secondary: '#b38600', cursor: '#eaff00', line: 'rgba(255, 204, 0, 0.4)' }
+        const palettes = {
+            blue: ["#001c44", "#0062ff", "#00f2ff"],
+            mustard: ["#5e4400", "#b38600", "#eaff00"]
         };
 
-        // Generación de letras
+        // Órbita
         for (let t = 0; t < totalTitles; t++) {
             const letters = nameText.split("");
             letters.forEach((char, i) => {
@@ -153,55 +148,66 @@
             document.body.classList.toggle('light-mode');
         });
 
-        // Clase para las Metaballs
         class Dot {
-            constructor() { this.init(); }
+            constructor(type) {
+                this.type = type; // 'S', 'M', 'L'
+                this.init();
+            }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.r = Math.random() * 80 + 40;
-                this.vx = (Math.random() - 0.5) * 1.5;
-                this.vy = (Math.random() - 0.5) * 1.5;
+                
+                // Tamaños variados
+                if (this.type === 'S') this.r = Math.random() * 20 + 15;
+                else if (this.type === 'M') this.r = Math.random() * 50 + 40;
+                else this.r = Math.random() * 80 + 90;
+
+                this.vx = (Math.random() - 0.5) * 1.8;
+                this.vy = (Math.random() - 0.5) * 1.8;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
+
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 300) { this.x += dx * 0.02; this.y += dy * 0.02; }
+                if (dist < 350) {
+                    this.x += dx * 0.02;
+                    this.y += dy * 0.02;
+                }
             }
             draw() {
-                const current = isLightMode ? colors.light : colors.dark;
-                ctx.fillStyle = current.primary;
+                const colors = isLightMode ? palettes.mustard : palettes.blue;
+                const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+                g.addColorStop(0, colors[2]); // Brillo
+                g.addColorStop(0.4, colors[1]); // Medio
+                g.addColorStop(1, colors[0]); // Base / Sombra
+                
+                ctx.fillStyle = g;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // Clase para las Líneas Horizontales Espontáneas
         class Line {
             constructor() { this.init(); }
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.length = Math.random() * 200 + 100;
-                this.speed = Math.random() * 15 + 5;
-                this.thickness = Math.random() * 2 + 1;
+                this.length = Math.random() * 300 + 150;
+                this.speed = Math.random() * 12 + 4;
             }
             update() {
                 this.x += this.speed;
-                if (this.x > width) {
-                    this.x = -this.length;
-                    this.y = Math.random() * height;
-                }
+                if (this.x > width) { this.x = -this.length; this.y = Math.random() * height; }
             }
             draw() {
-                const current = isLightMode ? colors.light : colors.dark;
-                ctx.strokeStyle = current.line;
-                ctx.lineWidth = this.thickness;
+                const colors = isLightMode ? palettes.mustard : palettes.blue;
+                ctx.strokeStyle = isLightMode ? 'rgba(179, 134, 0, 0.2)' : 'rgba(0, 242, 255, 0.2)';
+                ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
                 ctx.lineTo(this.x + this.length, this.y);
@@ -211,27 +217,29 @@
 
         function setup() {
             resize();
-            for (let i = 0; i < 20; i++) dots.push(new Dot());
-            for (let i = 0; i < 10; i++) lines.push(new Line());
+            // 35 geometrías totales para mayor densidad
+            for (let i = 0; i < 15; i++) dots.push(new Dot('S'));
+            for (let i = 0; i < 12; i++) dots.push(new Dot('M'));
+            for (let i = 0; i < 8; i++) dots.push(new Dot('L'));
+            for (let i = 0; i < 15; i++) lines.push(new Line());
             loop();
         }
 
         function loop() {
             ctx.clearRect(0, 0, width, height);
-            const current = isLightMode ? colors.light : colors.dark;
-            
-            // Dibujar líneas primero
             lines.forEach(l => { l.update(); l.draw(); });
 
-            // Dibujar gota del mouse
-            ctx.fillStyle = current.cursor;
+            // Gota Mouse
+            const colors = isLightMode ? palettes.mustard : palettes.blue;
+            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 130);
+            mg.addColorStop(0, colors[2]);
+            mg.addColorStop(1, 'transparent');
+            ctx.fillStyle = mg;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
+            ctx.arc(mouse.x, mouse.y, 130, 0, Math.PI * 2);
             ctx.fill();
 
-            // Dibujar Metaballs
             dots.forEach(d => { d.update(); d.draw(); });
-            
             requestAnimationFrame(loop);
         }
         setup();
