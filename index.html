@@ -5,23 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEBASTIÁN CH | Experimental</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+
+        .center-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 80%;
+            pointer-events: none;
+        }
+
+        .sub-title {
+            font-size: clamp(0.7rem, 1.2vw, 1rem);
+            font-weight: 100;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            line-height: 1.8;
+        }
+
+        .bold { font-weight: 900; }
+
+        .orbit-text {
+            position: fixed;
+            font-size: 6vw;
+            font-weight: 900;
+            text-transform: uppercase;
+            white-space: nowrap;
+            z-index: 5;
+            animation: moveAround 18s linear infinite;
+        }
+
+        .t2 { animation-delay: -4.5s; }
+        .t3 { animation-delay: -9s; }
+        .t4 { animation-delay: -13.5s; }
+
+        @keyframes moveAround {
+            0%   { top: 2%;   left: 2%;   transform: translate(0, 0); }
+            25%  { top: 2%;   left: 98%;  transform: translate(-100%, 0); }
+            50%  { top: 98%;  left: 98%;  transform: translate(-100%, -100%); }
+            75%  { top: 98%;  left: 2%;   transform: translate(0, -100%); }
+            100% { top: 2%;   left: 2%;   transform: translate(0, 0); }
+        }
+    </style>
 </head>
 <body>
 
     <canvas id="geometry-canvas"></canvas>
 
-    <div class="orbit-container">
-        <h1 class="orbit-text t1">SEBASTIÁN CH</h1>
-        <h1 class="orbit-text t2">SEBASTIÁN CH</h1>
-        <h1 class="orbit-text t3">SEBASTIÁN CH</h1>
-        <h1 class="orbit-text t4">SEBASTIÁN CH</h1>
-    </div>
-
     <div class="center-content">
         <p class="sub-title">Estudiante de arquitectura 10° semestre <br> <span class="bold">| Diseño | Modelado | 2026</span></p>
     </div>
 
-    <script src="script.js"></script>
+    <h1 class="orbit-text t1">SEBASTIÁN CH</h1>
+    <h1 class="orbit-text t2">SEBASTIÁN CH</h1>
+    <h1 class="orbit-text t3">SEBASTIÁN CH</h1>
+    <h1 class="orbit-text t4">SEBASTIÁN CH</h1>
+
+    <script>
+        const canvas = document.getElementById('geometry-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let shapes = [];
+        const mouse = { x: -1000, y: -1000, radius: 250 };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        class Shape {
+            constructor() {
+                this.init();
+            }
+            init() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.baseSize = Math.random() * 30 + 15;
+                this.size = this.baseSize;
+                this.opacity = Math.random() * 0.3 + 0.1;
+            }
+            draw() {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                let drawX = this.x;
+                let drawY = this.y;
+
+                if (dist < mouse.radius) {
+                    const angle = Math.atan2(dy, dx);
+                    const push = (mouse.radius - dist) / mouse.radius;
+                    drawX -= Math.cos(angle) * push * 120;
+                    drawY -= Math.sin(angle) * push * 120;
+                }
+
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.lineWidth = 1;
+                
+                for(let i=0; i<6; i++) {
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, this.size + (i*10), 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function setup() {
+            resize();
+            for(let i=0; i<30; i++) shapes.push(new Shape());
+            animate();
+        }
+
+        function animate() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, width, height);
+            shapes.forEach(s => s.draw());
+            requestAnimationFrame(animate);
+        }
+
+        setup();
+    </script>
 </body>
 </html>
