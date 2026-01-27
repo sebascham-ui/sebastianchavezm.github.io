@@ -1,82 +1,100 @@
-const canvas = document.getElementById('geometry-canvas');
-const ctx = canvas.getContext('2d');
+const mCanvas = document.getElementById('canvas-m');
+const sCanvas = document.getElementById('canvas-sketch');
+const mctx = mCanvas.getContext('2d');
+const sctx = sCanvas.getContext('2d');
 
-let width, height;
-let particles = [];
-const mouse = { x: -100, y: -100, radius: 150 };
+let w, h, isLight = false;
+let mouse = { x: -2000, y: -2000 };
 
 function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+    w = mCanvas.width = sCanvas.width = window.innerWidth;
+    h = mCanvas.height = sCanvas.height = window.innerHeight;
 }
-
 window.addEventListener('resize', resize);
-window.addEventListener('mousemove', (e) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
+window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('click', () => { 
+    isLight = !isLight; 
+    document.body.classList.toggle('light-mode'); 
 });
 
-class Shape {
-    constructor() {
-        this.reset();
+// --- METABALLS ORIGINALES ---
+class Dot {
+    constructor(type) { this.type = type; this.init(); }
+    init() {
+        this.x = Math.random() * w; this.y = Math.random() * h;
+        this.r = this.type === 'S' ? 30 : (this.type === 'M' ? 60 : 100);
+        this.vx = (Math.random() - 0.5) * 2.5;
+        this.vy = (Math.random() - 0.5) * 2.5;
     }
-
-    reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.baseSize = Math.random() * 50 + 20;
-        this.size = this.baseSize;
-        this.opacity = Math.random() * 0.5;
-        this.speed = Math.random() * 0.5 + 0.2;
-    }
-
-    draw() {
-        // Lógica de evasión del cursor
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        let displayX = this.x;
-        let displayY = this.y;
-
-        if (distance < mouse.radius) {
-            const angle = Math.atan2(dy, dx);
-            const force = (mouse.radius - distance) / mouse.radius;
-            displayX -= Math.cos(angle) * force * 50;
-            displayY -= Math.sin(angle) * force * 50;
-            this.size = this.baseSize * 0.5; // Se encogen al ser evadidas
+    update() {
+        const sc = window.scrollY;
+        if (sc > 10) {
+            this.y += ( (innerHeight/8) - this.y) * 0.05;
+            this.vx *= 0.95; this.vy *= 0.95;
         } else {
-            this.size = this.baseSize;
+            let dx = mouse.x - this.x, dy = mouse.y - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 350) { this.vx += dx*0.003; this.vy += dy*0.003; }
+            this.x += this.vx; this.y += this.vy;
+            this.vx *= 0.99; this.vy *= 0.99;
+            if(this.x<0 || this.x>w) this.vx *= -1;
+            if(this.y<0 || this.y>h) this.vy *= -1;
         }
-
-        // Dibujar círculos concéntricos como la imagen
-        ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 5; i++) {
-            ctx.beginPath();
-            ctx.arc(displayX, displayY, this.size + (i * 10), 0, Math.PI * 2);
-            ctx.stroke();
-        }
-
-        this.y -= this.speed;
-        if (this.y < -100) this.reset();
+    }
+    draw() {
+        const colors = isLight ? ["#ff6a00", "#ffea00", "#fff"] : ["#001c44", "#0062ff", "#00f2ff"];
+        const g = mctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+        g.addColorStop(0, colors[2]); g.addColorStop(0.5, colors[1]); g.addColorStop(1, colors[0]);
+        mctx.fillStyle = g; mctx.beginPath(); mctx.arc(this.x, this.y, this.r, 0, Math.PI*2); mctx.fill();
     }
 }
 
-function init() {
-    resize();
-    for (let i = 0; i < 15; i++) {
-        particles.push(new Shape());
+// --- GLITCH LINES ---
+class Line {
+    constructor() { this.init(); }
+    init() {
+        this.x = Math.random()*w; this.y = Math.random()*h;
+        this.len = Math.random()*400+100;
+        this.speed = Math.random()*25+15;
+    }
+    draw() {
+        sctx.strokeStyle = isLight ? "rgba(226,0,122,0.6)" : "rgba(0,242,255,0.6)";
+        sctx.lineWidth = 2;
+        sctx.beginPath(); sctx.moveTo(this.x, this.y); sctx.lineTo(this.x+this.len, this.y); sctx.stroke();
+        this.x += this.speed; if(this.x > w) this.init();
     }
 }
 
-function animate() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Rastro sutil
-    ctx.fillRect(0, 0, width, height);
-    
-    particles.forEach(p => p.draw());
-    requestAnimationFrame(animate);
+// Inicialización
+let dots = ['S','S','M','M','L','L'].map(t => new Dot(t));
+let lines = Array.from({length: 50}, () => new Line());
+
+// Órbita
+const nameT = "SEBASTIAN CH";
+nameT.split("").forEach((c, i) => {
+    const span = document.createElement('span');
+    span.className = 'letter';
+    span.innerText = c === " " ? "\u00A0" : c;
+    span.style.animationDelay = `${i * -0.38}s`;
+    document.getElementById('orbit').appendChild(span);
+});
+
+function loop() {
+    mctx.clearRect(0,0,w,h); sctx.clearRect(0,0,w,h);
+    dots.forEach(d => { d.update(); d.draw(); });
+    if(window.scrollY > 100) lines.forEach(l => l.draw());
+    requestAnimationFrame(loop);
 }
 
-init();
-animate();
+window.addEventListener('scroll', () => {
+    const sc = window.scrollY, vh = window.innerHeight;
+    if(sc > vh*0.3) {
+        document.getElementById('cmyk-box').classList.add('visible');
+        sCanvas.style.opacity = "1";
+    } else {
+        document.getElementById('cmyk-box').classList.remove('visible');
+        sCanvas.style.opacity = "0";
+    }
+});
+
+resize(); loop();
