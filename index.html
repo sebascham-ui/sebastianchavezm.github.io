@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEBASTIAN CH | PORTFOLIO 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;400;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- PALETA ESTRICTA --- */
+        :root {
+            --c-white: #ffffff;
+            --c-black: #000000;
+            --c-yellow: #ffff00;
+            --c-cyan:   #00ffff;
+            --c-blue:   #0000ff;
+            --c-red:    #ff0000;
+            --c-accent: #ff00a8; 
+
+            /* MODO OSCURO (Default) */
+            --bg: var(--c-black);
+            --txt: var(--c-white);
+            --primary-ui: var(--c-cyan);
+            --secondary-ui: var(--c-blue);
+            --glass-tint: rgba(0, 255, 255, 0.1);
+            
+            /* Colores para el efecto 3D Retro en Oscuro */
+            --btn-highlight: var(--c-cyan);
+            --btn-shadow: var(--c-blue);
+        }
+
+        body.light-mode {
+            /* MODO CLARO */
+            --bg: var(--c-white);
+            --txt: var(--c-black);
+            --primary-ui: var(--c-red);
+            --secondary-ui: var(--c-blue);
+            --glass-tint: rgba(255, 0, 0, 0.05);
+
+            /* Colores para el efecto 3D Retro en Claro */
+            --btn-highlight: var(--c-red); /* O blanco para más sutileza */
+            --btn-shadow: var(--c-black);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            background-color: var(--bg); 
+            color: var(--txt); 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .main-scroll-container {
+            height: 100vh; width: 100vw; overflow-y: scroll;
+            scroll-snap-type: y mandatory; scroll-behavior: smooth;
+        }
+
+        section {
+            position: relative; height: 100vh; width: 100vw;
+            scroll-snap-align: start; overflow: hidden;
+        }
+
+        /* ================= SECCIÓN 1 (INTACTA) ================= */
+        #section1 { z-index: 2; transition: opacity 0.1s linear; }
+
+        #section1::after {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 25vh;
+            background: linear-gradient(to bottom, transparent, var(--bg));
+            z-index: 5; pointer-events: none;
+        }
+
+        .canvas-container-s1 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; filter: blur(15px) contrast(35); background: var(--bg);
+        }
+
+        .center-content {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); text-align: center;
+            z-index: 10; pointer-events: none; color: var(--txt);
+        }
+
+        .sub-title {
+            font-size: clamp(0.6rem, 0.8vw, 0.8rem);
+            font-weight: 100; text-transform: uppercase; letter-spacing: 5px;
+        }
+
+        .bold { 
+            font-weight: 900; display: block; margin-top: 10px; 
+            font-size: clamp(1rem, 2vw, 1.8rem);
+        }
+
+        .orbit-wrapper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 15; overflow: hidden;
+        }
+
+        .letter {
+            position: absolute; font-size: 2.5rem; font-weight: 900;
+            text-transform: uppercase; display: flex;
+            align-items: center; justify-content: center;
+            width: 50px; height: 50px; color: var(--txt); will-change: transform;
+            transform-origin: center center;
+        }
+
+        /* ================= SECCIÓN 2 ================= */
+        #section2 {
+            background-color: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1;
+        }
+
+        .canvas-lines-s2 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+
+        .glitch-name {
+            position: absolute; top: 40px; left: 40px;
+            font-weight: 900; font-size: 1.2rem; z-index: 100;
+            letter-spacing: -0.5px; text-transform: uppercase; display: flex; color: var(--txt);
+        }
+        
+        .cmyk-flex {
+            display: flex; width: 100%; align-items: center; position: relative; z-index: 10;
+            opacity: 0; transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        #section2.section-active .cmyk-flex { opacity: 1; transform: translateY(0); }
+
+        .side-panel {
+            width: 25%; height: 55vh;
+            background: var(--glass-tint);
+            border: 2px solid var(--primary-ui);
+            backdrop-filter: blur(20px); 
+            padding: 50px 30px 30px 30px;
+            display: flex; flex-direction: column; justify-content: center;
+            color: var(--txt); transition: border 0.5s ease, background 0.5s ease;
+            position: relative;
+        }
+
+        /* --- NUEVO ESTILO DE PESTAÑA TIPO WINDOWS 95 (Taskbar Button) --- */
+        .win-tab {
+            position: absolute;
+            top: 10px; left: 10px; /* Posicionado dentro del panel */
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg); /* Fondo sólido para tapar el vidrio */
+            padding: 4px 8px;
+            
+            /* Efecto Biselado Retro usando Box Shadow */
+            /* Luz arriba/izq, Sombra abajo/der */
+            box-shadow: 
+                inset 1px 1px 0px var(--btn-highlight),
+                inset -1px -1px 0px var(--btn-shadow),
+                1px 1px 0px var(--btn-shadow); /* Pequeña sombra externa */
+            
+            font-family: 'Inter', sans-serif; /* O una fuente pixel si prefieres */
+            font-size: 0.75rem;
+            font-weight: 400; /* Regular, no bold, como en la imagen */
+            letter-spacing: 0.5px;
+            color: var(--txt);
+            border: 1px solid var(--secondary-ui); /* Borde fino extra */
+            z-index: 20;
+        }
+
+        /* Icono de Carpeta CSS Puro */
+        .win-icon {
+            width: 14px;
+            height: 12px;
+            background: var(--c-yellow);
+            position: relative;
+            /* Forma básica de carpeta */
+            clip-path: polygon(0 0, 40% 0, 50% 20%, 100% 20%, 100% 100%, 0 100%);
+        }
+        /* Detalle de la carpeta (borde o línea) */
+        .win-icon::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 0;
+            width: 100%; height: 1px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .center-panel {
+            width: 50%; height: 55vh;
+            border-top: 2px solid var(--primary-ui);
+            border-bottom: 2px solid var(--primary-ui);
+            background: rgba(0,0,0,0.02);
+            display: flex; justify-content: center; align-items: center;
+            transition: border 0.5s ease;
+        }
+
+        .fisheye-lens {
+            width: 300px; height: 300px; border-radius: 50%;
+            border: 2px solid var(--c-accent); overflow: hidden; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 30px rgba(255, 0, 168, 0.3);
+            position: relative; z-index: 20; transition: background 0.5s ease;
+        }
+
+        .lens-content {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            transform: scale(1.4); transition: transform 0.1s ease-out;
+            color: var(--c-accent); font-weight: 900; letter-spacing: 3px;
+        }
+
+        .profile-placeholder {
+            width: 100%; height: 150px; background: rgba(128, 128, 128, 0.1);
+            border: 1px solid var(--secondary-ui); margin-bottom: 20px;
+            display: grid; place-items: center; font-size: 0.7rem; color: var(--txt);
+        }
+
+        p { font-size: 0.85rem; line-height: 1.6; text-align: justify; }
+
+        .theme-toggle {
+            position: fixed; bottom: 30px; right: 30px; z-index: 999; width: 50px; height: 50px;
+            border-radius: 50%; background: var(--c-yellow); border: 2px solid var(--c-black);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .theme-toggle:hover { transform: scale(1.1); }
+        body.light-mode .theme-toggle { background: var(--c-black); border-color: var(--c-white); }
+        .toggle-icon { width: 15px; height: 15px; background: var(--c-black); border-radius: 50%; }
+        body.light-mode .toggle-icon { background: var(--c-yellow); box-shadow: 0 0 10px var(--c-yellow); }
+    </style>
+</head>
+<body>
+
+    <div class="theme-toggle" onclick="toggleGlobalMode()">
+        <div class="toggle-icon"></div>
+    </div>
+
+    <div class="main-scroll-container">
+        
+        <section id="section1">
+            <div class="canvas-container-s1">
+                <canvas id="metaballs"></canvas>
+            </div>
+
+            <div class="center-content">
+                <p class="sub-title">Estudiante de arquitectura 10° semestre</p>
+                <p class="bold">DISEÑO & MODELADO 3D | 2026</p>
+            </div>
+
+            <div id="orbit-container" class="orbit-wrapper"></div>
+        </section>
+
+        <section id="section2">
+            <div class="glitch-name" id="glitch-wrapper"></div>
+            <canvas id="canvas-glitch-lines" class="canvas-lines-s2"></canvas>
+
+            <div class="cmyk-flex">
+                <div class="side-panel">
+                    <div class="win-tab">
+                        <div class="win-icon"></div>
+                        <span>¿Quién soy?</span>
+                    </div>
+                    
+                    <div class="profile-placeholder">FOTO</div>
+                    <p><i>"Arquitectura contemporánea: la unión entre el artista y el estratega."</i></p>
+                </div>
+
+                <div class="center-panel" id="lens-trigger">
+                    <div class="fisheye-lens">
+                        <div class="lens-content" id="lens-target">PORTFOLIO</div>
+                    </div>
+                </div>
+
+                <div class="side-panel">
+                    <div class="win-tab">
+                        <div class="win-icon"></div>
+                        <span>Habilidades</span>
+                    </div>
+
+                    <p><b>DISEÑO ALGORÍTMICO</b><br><br>Optimización de procesos de modelado. Estética Aero-fruit 2026.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const P = {
+            white: "#ffffff", black: "#000000", yellow: "#ffff00",
+            cyan: "#00ffff", blue: "#0000ff", red: "#ff0000", accent: "#ff00a8"
+        };
+
+        let isLightMode = false;
+        function toggleGlobalMode() {
+            isLightMode = !isLightMode;
+            document.body.classList.toggle('light-mode');
+        }
+
+        const scrollContainer = document.querySelector('.main-scroll-container');
+        const section1 = document.getElementById('section1');
+        scrollContainer.addEventListener('scroll', () => {
+            const scrollTop = scrollContainer.scrollTop;
+            const windowHeight = window.innerHeight;
+            let opacity = 1 - (scrollTop / (windowHeight * 0.7));
+            if (opacity < 0) opacity = 0;
+            section1.style.opacity = opacity;
+            section1.style.pointerEvents = opacity <= 0.1 ? 'none' : 'auto';
+        });
+
+        const section2 = document.getElementById('section2');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) section2.classList.add('section-active');
+            });
+        }, { threshold: 0.3 });
+        observer.observe(section2);
+
+
+        // ================= SCRIPT SECCIÓN 1 =================
+        {
+            const canvas = document.getElementById('metaballs');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let dots = [], lines = [];
+            const mouse = { x: -2000, y: -2000 };
+            
+            const orbitContainer = document.getElementById('orbit-container');
+            const nameText = "SEBASTIAN CH SEBASTIAN CH SEBASTIAN CH ";
+            const letterElements = [];
+            
+            nameText.split("").forEach((char) => {
+                const span = document.createElement('span');
+                span.className = 'letter'; span.innerText = char === " " ? "\u00A0" : char;
+                orbitContainer.appendChild(span); letterElements.push({ el: span });
+            });
+
+            const angleSpacing = (Math.PI * 2) / nameText.length;
+            let globalAngleOffset = 0;
+
+            function getCircularPositionAndRotation(angle, w, h) {
+                const centerX = w / 2; const centerY = h / 2;
+                const radius = Math.min(w, h) * 0.38; 
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                const rotDeg = angle * (180 / Math.PI) + 90;
+                return { x: x - 25, y: y - 25, rot: rotDeg };
+            }
+
+            function updateOrbit() {
+                if (!width || !height) return;
+                globalAngleOffset += 0.002;
+                letterElements.forEach((letterObj, index) => {
+                    const currentAngle = globalAngleOffset + (index * angleSpacing);
+                    const pos = getCircularPositionAndRotation(currentAngle, width, height);
+                    letterObj.el.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${pos.rot}deg)`;
+                });
+            }
+
+            function resizeS1() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+
+            const getColors = () => isLightMode ? 
+                { c1: P.red, c2: P.yellow, c3: P.accent } : 
+                { c1: P.blue, c2: P.cyan, c3: P.accent };
+
+            class Dot {
+                constructor(type) { this.type = type; this.init(); }
+                init() {
+                    this.x = Math.random() * width; this.y = Math.random() * height;
+                    if (this.type === 'S') this.r = Math.random() * 20 + 20;
+                    else if (this.type === 'M') this.r = Math.random() * 40 + 50;
+                    else this.r = Math.random() * 60 + 90;
+                    this.vx = (Math.random() - 0.5) * 1.6; this.vy = (Math.random() - 0.5) * 1.6;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    const cols = getColors();
+                    const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+                    g.addColorStop(0, cols.c3); g.addColorStop(0.5, cols.c2); g.addColorStop(1, cols.c1);
+                    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+
+            class Line {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * width; this.y = Math.random() * height;
+                    this.length = Math.random() * 300 + 100; this.speed = Math.random() * 10 + 3;
+                }
+                update() {
+                    this.x += this.speed;
+                    if (this.x > width) { this.x = -this.length; this.y = Math.random() * height; }
+                }
+                draw() {
+                    ctx.strokeStyle = isLightMode ? P.blue : P.cyan;
+                    ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + this.length, this.y);
+                    ctx.stroke(); ctx.globalAlpha = 1.0;
+                }
+            }
+
+            function setupS1() {
+                resizeS1();
+                for (let i = 0; i < 12; i++) dots.push(new Dot('S'));
+                for (let i = 0; i < 10; i++) dots.push(new Dot('M'));
+                for (let i = 0; i < 8; i++) dots.push(new Dot('L'));
+                for (let i = 0; i < 12; i++) lines.push(new Line());
+                loopS1();
+            }
+
+            function loopS1() {
+                ctx.clearRect(0, 0, width, height);
+                lines.forEach(l => { l.update(); l.draw(); });
+                const cols = getColors();
+                const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
+                mg.addColorStop(0, cols.c3); mg.addColorStop(1, cols.c1);
+                ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2); ctx.fill();
+                dots.forEach(d => { d.update(); d.draw(); });
+                updateOrbit();
+                requestAnimationFrame(loopS1);
+            }
+            window.addEventListener('resize', resizeS1);
+            window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            setupS1();
+        }
+
+        // ================= SCRIPT SECCIÓN 2 =================
+        {
+            const canvas2 = document.getElementById('canvas-glitch-lines');
+            const ctx2 = canvas2.getContext('2d');
+            let w2, h2;
+            function resizeS2() {
+                w2 = canvas2.width = window.innerWidth; h2 = canvas2.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeS2); resizeS2();
+
+            const text = "SEBASTIAN CH | 2026";
+            const wrapper = document.getElementById('glitch-wrapper');
+            const glyphs = "ABCDEFG12345#$&*字汉语";
+            text.split('').forEach(char => {
+                const s = document.createElement('span'); s.className = 'g-char'; s.innerText = char === " " ? "\u00A0" : char; wrapper.appendChild(s);
+            });
+            const spans = document.querySelectorAll('.g-char');
+            setInterval(() => {
+                let cycles = 0;
+                const interval = setInterval(() => {
+                    spans.forEach((span) => {
+                        if (Math.random() > 0.8) {
+                            span.innerText = glyphs[Math.floor(Math.random() * glyphs.length)];
+                            const glitchColors = [P.yellow, P.cyan, P.red, P.blue, P.accent];
+                            span.style.color = glitchColors[Math.floor(Math.random() * glitchColors.length)];
+                        }
+                    });
+                    cycles++;
+                    if (cycles > 8) {
+                        clearInterval(interval);
+                        spans.forEach((span, i) => { span.innerText = text[i] === " " ? "\u00A0" : text[i]; span.style.color = ""; });
+                    }
+                }, 80);
+            }, 3000);
+
+            class ChaoticStroke {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * w2; this.y = Math.random() * h2;
+                    this.prevX = this.x; this.prevY = this.y;
+                    this.life = Math.random() * 20 + 5;
+                    this.color = Math.random() > 0.5 ? (isLightMode ? P.red : P.cyan) : P.accent;
+                    this.width = Math.random() * 1.5 + 0.2;
+                }
+                draw() {
+                    const jump = Math.random() * 60 - 30;
+                    this.x += jump; this.y += (Math.random() * 60 - 30);
+                    if (Math.random() > 0.95) {
+                         this.x = Math.random() * w2; this.y = Math.random() * h2;
+                         this.prevX = this.x; this.prevY = this.y; return;
+                    }
+                    ctx2.strokeStyle = this.color; ctx2.lineWidth = this.width;
+                    ctx2.lineCap = 'square'; ctx2.globalAlpha = 0.1; 
+                    ctx2.beginPath(); ctx2.moveTo(this.prevX, this.prevY); ctx2.lineTo(this.x, this.y); ctx2.stroke();
+                    ctx2.globalAlpha = 1.0; 
+                    this.prevX = this.x; this.prevY = this.y;
+                    this.life--;
+                    if(this.life <= 0 || this.x < 0 || this.x > w2 || this.y < 0 || this.y > h2) this.init();
+                }
+            }
+            const chaoticStrokes = Array.from({length: 80}, () => new ChaoticStroke());
+            function animateS2() {
+                ctx2.fillStyle = isLightMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
+                ctx2.fillRect(0, 0, w2, h2);
+                chaoticStrokes.forEach(s => s.draw());
+                requestAnimationFrame(animateS2);
+            }
+            animateS2();
+
+            const trigger = document.getElementById('lens-trigger');
+            const target = document.getElementById('lens-target');
+            trigger.addEventListener('mousemove', (e) => {
+                const rect = trigger.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 45;
+                const y = ((e.clientY - rect.top) / rect.height - 0.5) * 45;
+                target.style.transform = `translate(${x}px, ${y}px) scale(1.6)`;
+            });
+        }
+    </script>
+</body>
+</html>
