@@ -74,7 +74,6 @@
             z-index: 0; filter: blur(15px) contrast(35); background: var(--bg);
         }
 
-        /* CORRECCIÓN DE CENTRADO */
         .center-content {
             position: absolute; 
             top: 50%; left: 50%;
@@ -82,8 +81,8 @@
             z-index: 10; 
             pointer-events: none; 
             color: var(--txt);
-            width: 100%; /* Ocupa todo el ancho */
-            display: flex; /* Flexbox para centrado perfecto */
+            width: 100%;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -173,34 +172,47 @@
 
         .center-panel {
             width: 50%; height: 55vh;
-            border-top: 2px solid var(--primary-ui);
-            border-bottom: 2px solid var(--primary-ui);
+            /* CORRECCIÓN: Borde completo para enmarcar el GIF rectangular */
+            border: 2px solid var(--primary-ui);
             background: rgba(0,0,0,0.02);
             display: flex; justify-content: center; align-items: center;
             transition: border 0.5s ease;
         }
 
+        /* CORRECCIÓN: Contenedor del GIF rectangular y tamaño completo */
         .fisheye-lens {
-            width: 300px; height: 300px; border-radius: 50%;
-            border: 2px solid var(--c-accent); overflow: hidden; background: var(--bg);
+            width: 100%; height: 100%; /* Llena el panel central */
+            border-radius: 0; /* Ya no es círculo */
+            border: none; 
+            box-shadow: none;
+            overflow: hidden; background: var(--bg);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 30px rgba(255, 0, 168, 0.3);
             position: relative; z-index: 20; transition: background 0.5s ease;
         }
 
         .lens-content {
             width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-            transform: scale(1.4); transition: transform 0.1s ease-out;
+            /* Escala aumentada ligeramente para que el movimiento se note más en el rectángulo grande */
+            transform: scale(1.2); 
+            transition: transform 0.1s ease-out;
         }
-        /* Estilo para que las imágenes ocupen todo el espacio */
+        
         .full-img {
             width: 100%; height: 100%; object-fit: cover; display: block;
         }
-        /* Estilo específico para el placeholder de la foto */
+
+        /* CORRECCIÓN: Foto de perfil cuadrada y enfocada arriba */
         .profile-placeholder {
-            width: 100%; height: 200px; /* Altura fija para la foto */
+            width: 100%; 
+            aspect-ratio: 1 / 1; /* Fuerza que sea un cuadrado exacto */
+            background: rgba(128, 128, 128, 0.1);
             border: 1px solid var(--secondary-ui); margin-bottom: 20px;
             overflow: hidden;
+        }
+        /* Clase específica para enfocar la parte superior de la imagen */
+        .profile-img-focus {
+             width: 100%; height: 100%; object-fit: cover; display: block;
+             object-position: top center; /* Enfoca la parte de arriba (cara) */
         }
 
         p { font-size: 0.85rem; line-height: 1.6; text-align: justify; }
@@ -226,9 +238,12 @@
             #section2 { height: auto; min-height: 100vh; padding: 80px 0 40px 0; overflow-y: auto; }
             .glitch-name { top: 20px; left: 20px; font-size: 1rem; }
             .cmyk-flex { flex-direction: column; width: 90%; gap: 20px; padding-bottom: 40px; }
-            .side-panel { width: 100%; height: auto; min-height: 250px; border-bottom: 2px solid var(--primary-ui); }
-            .center-panel { width: 100%; height: 350px; border: 2px solid var(--primary-ui); order: -1; }
-            .fisheye-lens { width: 220px; height: 220px; }
+            /* En móvil, los paneles laterales tienen altura automática */
+            .side-panel { width: 100%; height: auto; min-height: 250px; }
+            /* El panel central en móvil tiene una altura fija para el GIF */
+            .center-panel { width: 100%; height: 400px; order: -1; }
+            /* El contenedor del GIF sigue llenando el panel central */
+            .fisheye-lens { width: 100%; height: 100%; }
         }
     </style>
 </head>
@@ -265,7 +280,7 @@
                     </div>
                     
                     <div class="profile-placeholder">
-                        <img src="perfil.jpg" alt="Foto Perfil" class="full-img">
+                        <img src="perfil.jpg" alt="Foto Perfil" class="profile-img-focus">
                     </div>
 
                     <p><i>"Arquitectura contemporánea: la unión entre el artista y el estratega."</i></p>
@@ -348,7 +363,6 @@
             function getCircularPositionAndRotation(angle, w, h) {
                 const centerX = w / 2; const centerY = h / 2;
                 
-                // CORRECCIÓN RADIO: Aumentado un poco más para que se vea más grande
                 const isMobile = w < 768;
                 const radiusFactor = isMobile ? 0.38 : 0.42; 
                 const radius = Math.min(w, h) * radiusFactor; 
@@ -518,9 +532,10 @@
             const target = document.getElementById('lens-target');
             trigger.addEventListener('mousemove', (e) => {
                 const rect = trigger.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 45;
-                const y = ((e.clientY - rect.top) / rect.height - 0.5) * 45;
-                target.style.transform = `translate(${x}px, ${y}px) scale(1.6)`;
+                // Ajuste del multiplicador (80) para que el movimiento se sienta bien en el área rectangular grande
+                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 80;
+                const y = ((e.clientY - rect.top) / rect.height - 0.5) * 80;
+                target.style.transform = `translate(${x}px, ${y}px) scale(1.2)`;
             });
         }
     </script>
