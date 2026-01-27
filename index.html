@@ -23,7 +23,6 @@
             --secondary-ui: var(--c-blue);
             --glass-tint: rgba(0, 255, 255, 0.1);
             
-            /* Colores para el efecto 3D Retro en Oscuro */
             --btn-highlight: var(--c-cyan);
             --btn-shadow: var(--c-blue);
         }
@@ -36,8 +35,7 @@
             --secondary-ui: var(--c-blue);
             --glass-tint: rgba(255, 0, 0, 0.05);
 
-            /* Colores para el efecto 3D Retro en Claro */
-            --btn-highlight: var(--c-red); /* O blanco para más sutileza */
+            --btn-highlight: var(--c-red);
             --btn-shadow: var(--c-black);
         }
 
@@ -47,7 +45,7 @@
             background-color: var(--bg); 
             color: var(--txt); 
             font-family: 'Inter', sans-serif; 
-            overflow: hidden; 
+            overflow-x: hidden;
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
@@ -61,7 +59,7 @@
             scroll-snap-align: start; overflow: hidden;
         }
 
-        /* ================= SECCIÓN 1 (INTACTA) ================= */
+        /* ================= SECCIÓN 1 ================= */
         #section1 { z-index: 2; transition: opacity 0.1s linear; }
 
         #section1::after {
@@ -76,20 +74,31 @@
             z-index: 0; filter: blur(15px) contrast(35); background: var(--bg);
         }
 
+        /* CORRECCIÓN DE CENTRADO */
         .center-content {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); text-align: center;
-            z-index: 10; pointer-events: none; color: var(--txt);
+            position: absolute; 
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%); 
+            z-index: 10; 
+            pointer-events: none; 
+            color: var(--txt);
+            width: 100%; /* Ocupa todo el ancho */
+            display: flex; /* Flexbox para centrado perfecto */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .sub-title {
-            font-size: clamp(0.6rem, 0.8vw, 0.8rem);
+            font-size: clamp(0.7rem, 0.9vw, 0.9rem);
             font-weight: 100; text-transform: uppercase; letter-spacing: 5px;
+            margin-bottom: 5px;
         }
 
         .bold { 
-            font-weight: 900; display: block; margin-top: 10px; 
-            font-size: clamp(1rem, 2vw, 1.8rem);
+            font-weight: 900; display: block;
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
         }
 
         .orbit-wrapper {
@@ -107,7 +116,11 @@
 
         /* ================= SECCIÓN 2 ================= */
         #section2 {
-            background-color: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1;
+            background-color: var(--bg); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1;
         }
 
         .canvas-lines-s2 {
@@ -117,8 +130,9 @@
 
         .glitch-name {
             position: absolute; top: 40px; left: 40px;
-            font-weight: 900; font-size: 1.2rem; z-index: 100;
+            font-weight: 900; font-size: 1.2rem; z-index: 999;
             letter-spacing: -0.5px; text-transform: uppercase; display: flex; color: var(--txt);
+            mix-blend-mode: normal;
         }
         
         .cmyk-flex {
@@ -139,48 +153,22 @@
             position: relative;
         }
 
-        /* --- NUEVO ESTILO DE PESTAÑA TIPO WINDOWS 95 (Taskbar Button) --- */
         .win-tab {
-            position: absolute;
-            top: 10px; left: 10px; /* Posicionado dentro del panel */
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--bg); /* Fondo sólido para tapar el vidrio */
+            position: absolute; top: 10px; left: 10px;
+            display: flex; align-items: center; gap: 6px;
+            background: #ffffff; color: #000000;
             padding: 4px 8px;
-            
-            /* Efecto Biselado Retro usando Box Shadow */
-            /* Luz arriba/izq, Sombra abajo/der */
-            box-shadow: 
-                inset 1px 1px 0px var(--btn-highlight),
-                inset -1px -1px 0px var(--btn-shadow),
-                1px 1px 0px var(--btn-shadow); /* Pequeña sombra externa */
-            
-            font-family: 'Inter', sans-serif; /* O una fuente pixel si prefieres */
-            font-size: 0.75rem;
-            font-weight: 400; /* Regular, no bold, como en la imagen */
-            letter-spacing: 0.5px;
-            color: var(--txt);
-            border: 1px solid var(--secondary-ui); /* Borde fino extra */
-            z-index: 20;
+            box-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080, 2px 2px 0px var(--btn-shadow);
+            font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.5px;
+            border: 1px solid var(--secondary-ui); z-index: 20;
         }
 
-        /* Icono de Carpeta CSS Puro */
         .win-icon {
-            width: 14px;
-            height: 12px;
-            background: var(--c-yellow);
-            position: relative;
-            /* Forma básica de carpeta */
+            width: 14px; height: 12px; background: var(--c-yellow); position: relative;
             clip-path: polygon(0 0, 40% 0, 50% 20%, 100% 20%, 100% 100%, 0 100%);
         }
-        /* Detalle de la carpeta (borde o línea) */
         .win-icon::after {
-            content: '';
-            position: absolute;
-            top: 3px; left: 0;
-            width: 100%; height: 1px;
-            background: rgba(0,0,0,0.2);
+            content: ''; position: absolute; top: 3px; left: 0; width: 100%; height: 1px; background: rgba(0,0,0,0.2);
         }
 
         .center-panel {
@@ -203,13 +191,16 @@
         .lens-content {
             width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
             transform: scale(1.4); transition: transform 0.1s ease-out;
-            color: var(--c-accent); font-weight: 900; letter-spacing: 3px;
         }
-
+        /* Estilo para que las imágenes ocupen todo el espacio */
+        .full-img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        /* Estilo específico para el placeholder de la foto */
         .profile-placeholder {
-            width: 100%; height: 150px; background: rgba(128, 128, 128, 0.1);
+            width: 100%; height: 200px; /* Altura fija para la foto */
             border: 1px solid var(--secondary-ui); margin-bottom: 20px;
-            display: grid; place-items: center; font-size: 0.7rem; color: var(--txt);
+            overflow: hidden;
         }
 
         p { font-size: 0.85rem; line-height: 1.6; text-align: justify; }
@@ -224,6 +215,21 @@
         body.light-mode .theme-toggle { background: var(--c-black); border-color: var(--c-white); }
         .toggle-icon { width: 15px; height: 15px; background: var(--c-black); border-radius: 50%; }
         body.light-mode .toggle-icon { background: var(--c-yellow); box-shadow: 0 0 10px var(--c-yellow); }
+
+        /* ================= MEDIA QUERIES (RESPONSIVE) ================= */
+        @media (max-width: 768px) {
+            .letter { font-size: 1.5rem; width: 30px; height: 30px; }
+            .sub-title { letter-spacing: 2px; }
+            .bold { font-size: 1.2rem; }
+
+            /* SECCIÓN 2 MÓVIL */
+            #section2 { height: auto; min-height: 100vh; padding: 80px 0 40px 0; overflow-y: auto; }
+            .glitch-name { top: 20px; left: 20px; font-size: 1rem; }
+            .cmyk-flex { flex-direction: column; width: 90%; gap: 20px; padding-bottom: 40px; }
+            .side-panel { width: 100%; height: auto; min-height: 250px; border-bottom: 2px solid var(--primary-ui); }
+            .center-panel { width: 100%; height: 350px; border: 2px solid var(--primary-ui); order: -1; }
+            .fisheye-lens { width: 220px; height: 220px; }
+        }
     </style>
 </head>
 <body>
@@ -258,13 +264,18 @@
                         <span>¿Quién soy?</span>
                     </div>
                     
-                    <div class="profile-placeholder">FOTO</div>
+                    <div class="profile-placeholder">
+                        <img src="perfil.jpg" alt="Foto Perfil" class="full-img">
+                    </div>
+
                     <p><i>"Arquitectura contemporánea: la unión entre el artista y el estratega."</i></p>
                 </div>
 
                 <div class="center-panel" id="lens-trigger">
                     <div class="fisheye-lens">
-                        <div class="lens-content" id="lens-target">PORTFOLIO</div>
+                        <div class="lens-content" id="lens-target">
+                            <img src="render.gif" alt="Render GIF" class="full-img">
+                        </div>
                     </div>
                 </div>
 
@@ -336,11 +347,18 @@
 
             function getCircularPositionAndRotation(angle, w, h) {
                 const centerX = w / 2; const centerY = h / 2;
-                const radius = Math.min(w, h) * 0.38; 
+                
+                // CORRECCIÓN RADIO: Aumentado un poco más para que se vea más grande
+                const isMobile = w < 768;
+                const radiusFactor = isMobile ? 0.38 : 0.42; 
+                const radius = Math.min(w, h) * radiusFactor; 
+
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
                 const rotDeg = angle * (180 / Math.PI) + 90;
-                return { x: x - 25, y: y - 25, rot: rotDeg };
+                
+                const offset = isMobile ? 15 : 25;
+                return { x: x - offset, y: y - offset, rot: rotDeg };
             }
 
             function updateOrbit() {
