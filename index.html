@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sebastián CH | Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURACIÓN BASE --- */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Importante para evitar scroll en móvil */
+            background-color: #8C5423;
+            cursor: crosshair;
+            /* Evitar comportamientos por defecto en móvil */
+            touch-action: none; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #kineticCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .content-layer {
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            padding-left: 5vw; 
+        }
+
+        /* --- ESTILOS RESPONSIVOS --- */
+        .subtitle {
+            position: absolute;
+            top: 20px;
+            left: 5vw;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 400;
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            color: #A69C94;
+            text-transform: uppercase;
+        }
+
+        .main-title-container {
+            text-align: left;
+            pointer-events: auto; 
+            margin-top: -5vh; 
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 4.5vw; /* Tamaño escritorio */
+            line-height: 1.05;
+            margin: 0;
+            letter-spacing: -0.03em;
+            color: #D9D7D7;
+            text-transform: uppercase;
+        }
+
+        /* --- AJUSTES MÓVILES (Media Query) --- */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 11vw; /* Mucho más grande en móvil */
+                line-height: 1.0;
+            }
+            
+            .subtitle {
+                font-size: 0.7rem;
+                top: 15px;
+                left: 6vw;
+            }
+
+            .content-layer {
+                padding-left: 6vw;
+                justify-content: flex-start; /* Subir contenido */
+                padding-top: 25vh; /* Empujar un poco hacia abajo */
+            }
+
+            .main-title-container {
+                margin-top: 0;
+            }
+        }
+
+        .title-line {
+            display: block;
+        }
+
+        /* --- CENSURA --- */
+        .censor-char {
+            display: inline-block;
+            position: relative;
+        }
+
+        .censor-char::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #D9D7D7;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .censor-char.is-censored {
+            color: transparent;
+        }
+        .censor-char.is-censored::after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="kineticCanvas"></canvas>
+
+    <div class="content-layer">
+        <div class="subtitle">
+            Diseño y modelado | Proyectos 2026
+        </div>
+
+        <div class="main-title-container">
+            <h1 id="mainTitle">
+                <span class="title-line">PORTAFOLIO</span>
+                <span class="title-line">SEBASTIAN CH</span>
+            </h1>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('kineticCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const colorBg = '#8C5423';      
+        const colorRect = '#A69C94';    
+
+        let width, height;
+        // Posición inicial fuera de pantalla
+        let mouse = { x: -5000, y: -5000 };
+        let time = 0;
+
+        let rectW, rectH, gapW, gapH;
+        let echoes = [];
+
+        function init() {
+            resize();
+            window.addEventListener('resize', resize);
+            
+            // --- MOUSE EVENTS (Escritorio) ---
+            window.addEventListener('mousemove', e => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+            canvas.addEventListener('click', e => {
+                createEcho(e.clientX, e.clientY);
+            });
+
+            // --- TOUCH EVENTS (Móvil) ---
+            // 'touchmove' actualiza la posición del "viento"
+            window.addEventListener('touchmove', e => {
+                // Evita el scroll nativo
+                // e.preventDefault(); 
+                const touch = e.touches[0];
+                mouse.x = touch.clientX;
+                mouse.y = touch.clientY;
+            }, { passive: false });
+
+            // 'touchstart' también actualiza y crea eco si tocas el fondo
+            canvas.addEventListener('touchstart', e => {
+                const touch = e.touches[0];
+                mouse.x = touch.clientX;
+                mouse.y = touch.clientY;
+                createEcho(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            animate();
+            initTypeEffect();
+        }
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            // --- LÓGICA RESPONSIVA DEL GRID ---
+            let targetCols = 60; // Escritorio
+            
+            // Si es pantalla vertical (móvil)
+            if (width < 768) {
+                targetCols = 25; // Menos columnas para que se vean bien los rectángulos
+            }
+
+            rectW = width / (targetCols * 1.2);          
+            rectH = rectW * 3.85; 
+            gapW = rectW / 5;       
+            gapH = rectW / 5;     
+        }
+
+        function createEcho(x, y) {
+            echoes.push({
+                x: x,
+                y: y,
+                creationTime: Date.now(),
+                initialWidth: rectW * 0.5 
+            });
+        }
+
+        function animate() {
+            ctx.fillStyle = colorBg;
+            ctx.fillRect(0, 0, width, height);
+
+            // ECOS
+            const now = Date.now();
+            echoes = echoes.filter(echo => now - echo.creationTime < 4000);
+
+            echoes.forEach(echo => {
+                const age = now - echo.creationTime;
+                const lifeRatio = age / 4000; 
+                const currentEchoWidth = echo.initialWidth * (1 + lifeRatio * 8); 
+                const currentOpacity = (1 - lifeRatio) * 0.25; 
+
+                ctx.fillStyle = `rgba(166, 156, 148, ${currentOpacity})`;
+                ctx.fillRect(
+                    echo.x - currentEchoWidth / 2, 
+                    echo.y - rectH / 2, 
+                    currentEchoWidth, 
+                    rectH
+                );
+            });
+
+            // FACHADA KINÉTICA
+            ctx.fillStyle = colorRect;
+            time += 0.04; 
+            
+            // Radio de interacción un poco mayor en móvil para que el dedo tape más
+            const isMobile = width < 768;
+            const mouseRadius = Math.min(width, height) * (isMobile ? 0.45 : 0.4); 
+            
+            // Ajustar altura de inicio según dispositivo
+            const startY = height * (isMobile ? 0.55 : 0.65);
+
+            let rowIndex = 0;
+            for (let y = startY; y < height; y += (rectH + gapH)) {
+                rowIndex++;
+                const rowOffset = rowIndex * 123.45; 
+                const direction = (rowIndex % 2 === 0) ? 1 : -1;
+
+                let colIndex = 0;
+                for (let x = 0; x < width; x += (rectW + gapW)) {
+                    colIndex++;
+                    const centerX = x + rectW / 2;
+                    // Optimización: no dibujar si está fuera de pantalla
+                    // if (centerX < -50 || centerX > width + 50) continue; 
+
+                    const centerY = y + rectH / 2;
+                    
+                    let effectiveTime = time * direction; 
+                    const rawPos = (colIndex + effectiveTime + rowOffset);
+                    let positionInCycle = Math.abs(rawPos) % 25;
+                    if (positionInCycle < 0) positionInCycle += 25;
+
+                    let waveInfluence = 0;
+                    if (positionInCycle < 15) {
+                        const normalizedPos = (positionInCycle / 15) * Math.PI;
+                        waveInfluence = Math.sin(normalizedPos); 
+                    } 
+
+                    const dx = mouse.x - centerX;
+                    const dy = mouse.y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    let mouseInfluence = 0;
+                    if (dist < mouseRadius) {
+                        const t = 1 - (dist / mouseRadius);
+                        mouseInfluence = Math.pow(t, 2); 
+                    }
+
+                    let totalFactor = waveInfluence * 0.6 + mouseInfluence; 
+                    if (totalFactor > 1) totalFactor = 1;
+
+                    const currentWidth = rectW - (rectW * 0.85 * totalFactor);
+
+                    const drawX = centerX - (currentWidth / 2);
+                    ctx.fillRect(drawX, y, currentWidth, rectH);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function initTypeEffect() {
+            const lines = document.querySelectorAll('.title-line');
+            lines.forEach(line => {
+                const text = line.innerText;
+                line.innerHTML = ''; 
+                text.split('').forEach(char => {
+                    const span = document.createElement('span');
+                    span.innerText = char;
+                    span.className = 'censor-char';
+                    if (char === ' ') span.style.width = '0.4em';
+                    
+                    // Toggle con Mouse
+                    span.addEventListener('mouseenter', function() {
+                        this.classList.toggle('is-censored');
+                    });
+                    
+                    // Toggle con Tap (Touch)
+                    // Añadimos 'click' para asegurar compatibilidad en móvil al tocar la letra
+                    span.addEventListener('click', function(e) {
+                        // Evita que el click se propague al canvas y cree un eco
+                        e.stopPropagation(); 
+                        this.classList.toggle('is-censored');
+                    });
+
+                    line.appendChild(span);
+                });
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
